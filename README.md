@@ -1,4 +1,8 @@
 # Descartes-Seletivo
+Victor Beltrame Sartos - RA: 10743709
+
+
+
 ## Explicação inicial sobre o processo de ideação
 Conscientizar o público geral sobre reciclagem e descarte correto das diversas formas de lixo. Para isso, faremos uma página com duas características principais:
 1. Cartões informativos com descrição do tipo do lixo e o ponto de coleta mais próximo.
