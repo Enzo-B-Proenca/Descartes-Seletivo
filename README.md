@@ -1,4 +1,5 @@
 # Descartes-Seletivo
+## Integrantes: 
 - Enzo Benedetto Proença - RA: 10418579
 - Livia Negrucci Cantowitz - RA: 10389419
 - Victor Beltrame Sartos - RA: 10743709
