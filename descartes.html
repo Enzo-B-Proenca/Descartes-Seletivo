@@ -75,6 +75,27 @@
       color: #2e7d32;
       min-height: 20px;
     }
+
+        #mapa-section {
+      padding: 20px;
+      text-align: center;
+    }
+
+    #mapa {
+      height: 300px;
+      width: 90%;
+      margin: 0 auto;
+      border: 2px dashed #2e7d32;
+      border-radius: 10px;
+      background-color: #e8f5e9;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
@@ -118,6 +139,14 @@
     </div>
 
   </section>
+
+  <section id="mapa-section">
+    <h2>Mapa de pontos de coleta</h2>
+    <div id="mapa"></div>
+  </section>
+
+  <footer>
+  </footer>
   
   <script>
     function mostrarPontos(tipo) {
