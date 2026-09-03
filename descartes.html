@@ -43,6 +43,31 @@
     .card h2 {
       color: #2e7d32;
     }
+
+        .card button {
+      background-color: #2e7d32;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .card button:hover {
+      background-color: #1b5e20;
+    }
+
+    .pontos {
+      display: none;
+      text-align: left;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
+      background-color: #f0f8f0;
+      border-radius: 5px;
+      padding: 8px;
+    }
   </style>
 </head>
 <body>
@@ -57,16 +82,30 @@
     <div class="card" data-tipo="reciclavel">
       <h2>Reciclável</h2>
       <p>Papel, plástico, vidro e metal. Separe e leve até um ecoponto.</p>
+            <button>Ver pontos de coleta</button>
+      <div class="pontos" id="pontos-reciclavel">
+        - Ecoponto Pinheiros<br>
+        - Ecoponto Consolação
+      </div>
     </div>
 
     <div class="card" data-tipo="eletronico">
       <h2>Eletrônico</h2>
       <p>Pilhas, celulares e aparelhos velhos. Não jogue no lixo comum!</p>
+            <button>Ver pontos de coleta</button>
+      <div class="pontos" id="pontos-eletronico">
+        - Shopping Eldorado<br>
+        - Correios Centro
+      </div>
     </div>
 
     <div class="card" data-tipo="outros">
       <h2>Outros</h2>
       <p>Óleo de cozinha, remédios vencidos e outros resíduos especiais.</p>
+            <button>Ver pontos de coleta</button>
+      <div class="pontos" id="pontos-outros">
+        - Posto de Coleta de Óleo - Vila Sônia
+      </div>
     </div>
 
   </section>
