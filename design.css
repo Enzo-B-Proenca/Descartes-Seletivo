@@ -1,0 +1,92 @@
+body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #2e7d32;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    #cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      padding: 20px;
+    }
+
+    .card {
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      width: 220px;
+      text-align: center;
+      box-shadow: 1px 1px 5px #ccc;
+    }
+
+    .card h2 {
+      color: #2e7d32;
+    }
+
+        .card button {
+      background-color: #2e7d32;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .card button:hover {
+      background-color: #1b5e20;
+    }
+
+    .pontos {
+      display: none;
+      text-align: left;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
+      background-color: #f0f8f0;
+      border-radius: 5px;
+      padding: 8px;
+    }
+
+        #mensagem {
+      text-align: center;
+      font-weight: bold;
+      color: #2e7d32;
+      min-height: 20px;
+    }
+
+        #mapa-section {
+      padding: 20px;
+      text-align: center;
+    }
+
+    #mapa {
+      height: 300px;
+      width: 90%;
+      margin: 0 auto;
+      border: 2px dashed #2e7d32;
+      border-radius: 10px;
+      background-color: #e8f5e9;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+      color: #555;
+    }
