@@ -6,7 +6,7 @@ body {
     }
 
     header {
-      background-color: #2e7d32;
+      background-color: #1b3a2f;
       color: white;
       text-align: center;
       padding: 20px;
@@ -39,7 +39,7 @@ body {
     }
 
         .card button {
-      background-color: #2e7d32;
+      background-color: #1b3a2f;
       color: white;
       border: none;
       padding: 8px 12px;
