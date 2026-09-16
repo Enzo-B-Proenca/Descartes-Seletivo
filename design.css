@@ -90,3 +90,41 @@ body {
       font-size: 14px;
       color: #555;
     }
+#busca-section {
+  text-align: center;
+  padding: 20px;
+}
+
+#busca {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 300px;
+  font-size: 14px;
+}
+
+#lista-enderecos {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 20px 20px;
+}
+
+.endereco {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.endereco h3 {
+  margin: 0 0 5px;
+  color: #1b3a2f;
+}
+
+.endereco p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
