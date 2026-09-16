@@ -86,3 +86,40 @@ A `<section id="mapa-section">` com uma `<div id="mapa">` vazia, estilizada como
   <div id="mapa"></div>
 </section>
 ```
+
+### 6. Segunda página: busca de endereços
+
+Foi criada a página `enderecos.html`, com uma lista de ecopontos reais da cidade de São Paulo (dados públicos da Prefeitura/AMLURB). Essa página tem uma caixa de busca que filtra a lista conforme o usuário digita.
+
+```html
+<input type="text" id="busca" placeholder="Digite um bairro ou rua..." onkeyup="filtrarEnderecos()">
+```
+
+```javascript
+
+function filtrarEnderecos() {
+  var termo = document.getElementById('busca').value.toLowerCase();
+  var enderecos = document.getElementsByClassName('endereco');
+
+  for (var i = 0; i < enderecos.length; i++) {
+    var texto = enderecos[i].innerText.toLowerCase();
+
+    if (texto.indexOf(termo) !== -1) {
+      enderecos[i].style.display = 'block';
+    } else {
+      enderecos[i].style.display = 'none';
+    }
+  }
+}
+```
+
+### 7. Menu de navegação
+
+Foi adicionado um menu (`<nav>`) no topo das duas páginas, permitindo alternar entre a página inicial e a busca de endereços.
+
+```html
+<nav id="menu">
+  <a href="descartes.html">Início</a>
+  <a href="enderecos.html">Buscar Endereços</a>
+</nav>
+```
