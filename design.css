@@ -128,3 +128,22 @@ body {
   font-size: 14px;
   color: #333;
 }
+#menu {
+  background-color: white;
+  text-align: center;
+  padding: 12px;
+  border-bottom: 1px solid #ccc;
+}
+
+#menu a {
+  color: #1b3a2f;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 0 15px;
+  padding: 6px 10px;
+  border-radius: 5px;
+}
+
+#menu a:hover {
+  background-color: #e8f5e9;
+}
