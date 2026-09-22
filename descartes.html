@@ -15,53 +15,57 @@
   </header>
 
   <nav id="menu">
-  <a href="descartes.html">Início</a>
-  <a href="enderecos.html">Buscar Endereços</a>
-</nav>
-  
-  <p id="mensagem"></p>
+    <a href="descartes.html">Início</a>
+    <a href="enderecos.html">Buscar Endereços</a>
+  </nav>
 
-  <section id="cards">
+  <main>
 
-    <div class="card" data-tipo="reciclavel">
-      <h2>Reciclável</h2>
-      <p>Papel, plástico, vidro e metal. Separe e leve até um ecoponto.</p>
-      <button onclick="mostrarPontos('reciclavel')">Ver pontos de coleta</button>
-      <div class="pontos" id="pontos-reciclavel">
-        - Ecoponto Pinheiros<br>
-        - Ecoponto Consolação
-      </div>
-    </div>
+    <p id="mensagem" aria-live="polite"></p>
 
-    <div class="card" data-tipo="eletronico">
-      <h2>Eletrônico</h2>
-      <p>Pilhas, celulares e aparelhos velhos. Não jogue no lixo comum!</p>
-      <button onclick="mostrarPontos('eletronico')">Ver pontos de coleta</button>
-      <div class="pontos" id="pontos-eletronico">
-        - Shopping Eldorado<br>
-        - Correios Centro
-      </div>
-    </div>
+    <section id="cards">
 
-    <div class="card" data-tipo="outros">
-      <h2>Outros</h2>
-      <p>Óleo de cozinha, remédios vencidos e outros resíduos especiais.</p>
-      <button onclick="mostrarPontos('outros')">Ver pontos de coleta</button>
-      <div class="pontos" id="pontos-outros">
-        - Posto de Coleta de Óleo - Vila Sônia
-      </div>
-    </div>
+      <article class="card" data-tipo="reciclavel">
+        <h2>Reciclável</h2>
+        <p>Papel, plástico, vidro e metal. Separe e leve até um ecoponto.</p>
+        <button onclick="mostrarPontos('reciclavel')">Ver pontos de coleta</button>
+        <ul class="pontos" id="pontos-reciclavel">
+          <li>Ecoponto Pinheiros</li>
+          <li>Ecoponto Consolação</li>
+        </ul>
+      </article>
 
-  </section>
+      <article class="card" data-tipo="eletronico">
+        <h2>Eletrônico</h2>
+        <p>Pilhas, celulares e aparelhos velhos. Não jogue no lixo comum!</p>
+        <button onclick="mostrarPontos('eletronico')">Ver pontos de coleta</button>
+        <ul class="pontos" id="pontos-eletronico">
+          <li>Shopping Eldorado</li>
+          <li>Correios Centro</li>
+        </ul>
+      </article>
 
-  <section id="mapa-section">
-    <h2>Mapa de pontos de coleta</h2>
-    <div id="mapa"></div>
-  </section>
+      <article class="card" data-tipo="outros">
+        <h2>Outros</h2>
+        <p>Óleo de cozinha, remédios vencidos e outros resíduos especiais.</p>
+        <button onclick="mostrarPontos('outros')">Ver pontos de coleta</button>
+        <ul class="pontos" id="pontos-outros">
+          <li>Posto de Coleta de Óleo - Vila Sônia</li>
+        </ul>
+      </article>
+
+    </section>
+
+    <section id="mapa-section">
+      <h2>Mapa de pontos de coleta</h2>
+      <div id="mapa"></div>
+    </section>
+
+  </main>
 
   <footer>
   </footer>
-  
+
   <script src="script.js"></script>
 
 </body>
