@@ -135,6 +135,7 @@ const ENDERECOS = [
 let CENTRO_SP = [-23.5505, -46.6333];
 
 const CHAVE_FAVORITOS = 'descartes:favoritos';
+const MSG_FALHA_FAVORITOS = 'Não foi possível atualizar os favoritos neste navegador.';
 
 function criarElemento(tag, classe, texto) {
   let elemento = document.createElement(tag);
@@ -167,10 +168,8 @@ function mostrarPontos(tipo) {
   let lista = document.getElementById('pontos-' + tipo);
   if (!lista) return;
 
-  if (lista.style.display === 'block')
-    lista.style.display = 'none';
-  else
-    lista.style.display = 'block';
+  let visivel = lista.style.display === 'block';
+  lista.style.display = visivel ? 'none' : 'block';
 
   mostrarMensagem('Pontos de coleta de ' + tipo);
 }
@@ -228,10 +227,7 @@ function criarCardEndereco(item) {
     criarElemento('p', '', item.endereco),
     criarAcoes(
       criarBotao('ver-mapa', 'Ver no mapa', () => irParaMapa(item.nome)),
-      criarBotaoFavorito(item, (favoritou, botao) => {
-        atualizarBotaoFavorito(botao, favoritou);
-        mostrarMensagem((favoritou ? 'Adicionado aos favoritos: ' : 'Removido dos favoritos: ') + item.nome);
-      })
+      criarBotaoFavorito(item)
     )
   );
 
@@ -263,14 +259,14 @@ function ehFavorito(nome) {
 function alternarFavorito(item) {
   let favoritos = carregarFavoritos();
   let indice = favoritos.findIndex((favorito) => favorito.nome === item.nome);
+  let favoritou = indice === -1;
 
-  if (indice === -1) {
+  if (favoritou)
     favoritos.push({ nome: item.nome, endereco: item.endereco, coords: item.coords });
-  } else {
+  else
     favoritos.splice(indice, 1);
-  }
 
-  return salvarFavoritos(favoritos) && indice === -1;
+  return { salvou: salvarFavoritos(favoritos), favoritou };
 }
 
 function removerFavorito(nome) {
@@ -304,17 +300,24 @@ function atualizarBotaoFavorito(botao, favoritado) {
   botao.setAttribute('aria-pressed', favoritado);
 }
 
-function criarBotaoFavorito(item, aoAlternar) {
-  let favoritado = ehFavorito(item.nome);
-  let botao = criarElemento('button', favoritado ? 'favorito ativo' : 'favorito', favoritado ? '★' : '☆');
-
+function criarBotaoFavorito(item) {
+  let botao = criarElemento('button', 'favorito', '☆');
   botao.type = 'button';
-  botao.title = rotuloFavorito(favoritado);
-  botao.setAttribute('aria-label', rotuloFavorito(favoritado));
-  botao.setAttribute('aria-pressed', favoritado);
-  botao.addEventListener('click', () => aoAlternar(alternarFavorito(item), botao));
-
+  atualizarBotaoFavorito(botao, ehFavorito(item.nome));
+  botao.addEventListener('click', () => alternarFavoritoNaLista(item, botao));
   return botao;
+}
+
+function alternarFavoritoNaLista(item, botao) {
+  let { salvou, favoritou } = alternarFavorito(item);
+
+  if (!salvou) {
+    mostrarMensagem(MSG_FALHA_FAVORITOS);
+    return;
+  }
+
+  atualizarBotaoFavorito(botao, favoritou);
+  mostrarMensagem((favoritou ? 'Adicionado aos favoritos: ' : 'Removido dos favoritos: ') + item.nome);
 }
 
 function criarCardFavorito(favorito) {
@@ -325,15 +328,7 @@ function criarCardFavorito(favorito) {
   botaoMapa.disabled = semMapa;
   if (semMapa) botaoMapa.title = 'Este ponto não tem coordenadas cadastradas.';
 
-  let botaoRemover = criarBotao('remover', 'Remover', () => {
-    if (!removerFavorito(favorito.nome)) {
-      mostrarMensagem('Não foi possível atualizar os favoritos neste navegador.');
-      return;
-    }
-
-    mostrarMensagem('Removido dos favoritos: ' + favorito.nome);
-    listarFavoritos();
-  });
+  let botaoRemover = criarBotao('remover', 'Remover', () => removerFavoritoDaLista(favorito));
 
   artigo.append(criarElemento('h3', '', favorito.nome), criarElemento('p', '', favorito.endereco));
 
@@ -342,6 +337,16 @@ function criarCardFavorito(favorito) {
   artigo.appendChild(criarAcoes(botaoMapa, botaoRemover));
 
   return artigo;
+}
+
+function removerFavoritoDaLista(favorito) {
+  if (!removerFavorito(favorito.nome)) {
+    mostrarMensagem(MSG_FALHA_FAVORITOS);
+    return;
+  }
+
+  mostrarMensagem('Removido dos favoritos: ' + favorito.nome);
+  listarFavoritos();
 }
 
 function atualizarContagemFavoritos(favoritos) {
@@ -379,17 +384,18 @@ function iniciarFavoritos() {
   let botaoLimpar = document.getElementById('limpar-favoritos');
   if (!botaoLimpar) return;
 
-  botaoLimpar.addEventListener('click', () => {
-    if (!window.confirm('Remover todos os favoritos salvos neste navegador?')) return;
+  botaoLimpar.addEventListener('click', limparListaDeFavoritos);
+}
 
-    if (!limparFavoritos()) {
-      mostrarMensagem('Não foi possível atualizar os favoritos neste navegador.');
-      return;
-    }
+function limparListaDeFavoritos() {
+  if (!window.confirm('Remover todos os favoritos salvos neste navegador?')) return;
+  if (!limparFavoritos()) {
+    mostrarMensagem(MSG_FALHA_FAVORITOS);
+    return;
+  }
 
-    mostrarMensagem('Todos os favoritos foram removidos.');
-    listarFavoritos();
-  });
+  mostrarMensagem('Todos os favoritos foram removidos.');
+  listarFavoritos();
 }
 
 function iniciarMapa() {
@@ -403,18 +409,19 @@ function iniciarMapa() {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(mapa);
 
-  let params = new URLSearchParams(window.location.search);
-  let nome = params.get('ecoponto');
+  let nome = new URLSearchParams(window.location.search).get('ecoponto');
+  if (nome) return colocarPin(mapa, nome);
+  if (!navigator.geolocation) return;
 
-  if (nome) {
-    colocarPin(mapa, nome);
-  } else if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      let minhaPosicao = [pos.coords.latitude, pos.coords.longitude];
-      mapa.setView(minhaPosicao, 14);
-      L.marker(minhaPosicao).addTo(mapa).bindPopup('Você está aqui').openPopup();
-    }, function () {});
-  }
+  centralizarNaMinhaPosicao(mapa);
+}
+
+function centralizarNaMinhaPosicao(mapa) {
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    let minhaPosicao = [pos.coords.latitude, pos.coords.longitude];
+    mapa.setView(minhaPosicao, 14);
+    L.marker(minhaPosicao).addTo(mapa).bindPopup('Você está aqui').openPopup();
+  }, function () {});
 }
 
 function colocarPin(mapa, nome) {

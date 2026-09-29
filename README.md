@@ -231,10 +231,17 @@ function iniciarMapa() {
 }
 ```
 
-Quando o usuário não veio de um endereço específico, a função tenta a geolocalização do navegador: pede a posição ao usuário, recentraliza o mapa nela e abre um popup "Você está aqui".
+Quando o usuário não veio de um endereço específico, a função tenta a geolocalização do navegador. Em vez de um `if/else if`, a decisão é tomada por guard clauses — cada uma sai da função assim que o caso é resolvido — e a geolocalização ficou em uma função própria, `centralizarNaMinhaPosicao`, para o corpo do callback não ficar aninhado dentro do `else if`:
 
 ```javascript
-} else if (navigator.geolocation) {
+  let nome = new URLSearchParams(window.location.search).get('ecoponto');
+  if (nome) return colocarPin(mapa, nome);
+  if (!navigator.geolocation) return;
+
+  centralizarNaMinhaPosicao(mapa);
+}
+
+function centralizarNaMinhaPosicao(mapa) {
   navigator.geolocation.getCurrentPosition(function (pos) {
     let minhaPosicao = [pos.coords.latitude, pos.coords.longitude];
     mapa.setView(minhaPosicao, 14);
@@ -374,20 +381,34 @@ function salvarFavoritos(favoritos) {
 }
 ```
 
-O botão de favorito lê o estado salvo para decidir se começa preenchido, e o clique alterna a entrada usando `findIndex` + `push`/`splice`. Se a gravação falhar, o botão não muda de estado.
+O botão de favorito lê o estado salvo para decidir se começa preenchido, e o clique alterna a entrada usando `findIndex` + `push`/`splice`. A função devolve um objeto com os dois resultados possíveis — `salvou` (a gravação no `localStorage` funcionou) e `favoritou` (a operação foi adicionar, e não remover) — para que a interface consiga distinguir uma falha de gravação de uma remoção. Se a gravação falhar, o `★`/`☆` do botão não muda e a mensagem de erro é mostrada, em vez de confirmar uma operação que não foi persistida.
 
 ```javascript
 function alternarFavorito(item) {
   let favoritos = carregarFavoritos();
   let indice = favoritos.findIndex((favorito) => favorito.nome === item.nome);
+  let favoritou = indice === -1;
 
-  if (indice === -1) {
+  if (favoritou)
     favoritos.push({ nome: item.nome, endereco: item.endereco, coords: item.coords });
-  } else {
+  else
     favoritos.splice(indice, 1);
+
+  return { salvou: salvarFavoritos(favoritos), favoritou };
+}
+```
+
+```javascript
+function alternarFavoritoNaLista(item, botao) {
+  let { salvou, favoritou } = alternarFavorito(item);
+
+  if (!salvou) {
+    mostrarMensagem(MSG_FALHA_FAVORITOS);
+    return;
   }
 
-  return salvarFavoritos(favoritos) && indice === -1;
+  atualizarBotaoFavorito(botao, favoritou);
+  mostrarMensagem((favoritou ? 'Adicionado aos favoritos: ' : 'Removido dos favoritos: ') + item.nome);
 }
 ```
 
