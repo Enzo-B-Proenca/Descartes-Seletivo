@@ -9,6 +9,7 @@
   --cor-texto: #333;
   --cor-texto-suave: #555;
   --cor-borda: #ccc;
+  --cor-favorito: #e0a300;
   --fonte: Arial, sans-serif;
   --tamanho-texto: 14px;
   --raio-sm: 5px;
@@ -179,4 +180,90 @@ footer {
 
 #menu a:hover {
   background-color: var(--cor-fundo-suave);
+}
+
+#menu a.ativo {
+  background-color: var(--cor-fundo-suave);
+  color: var(--cor-destaque);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.acoes button {
+  margin-top: 0;
+}
+
+.favorito,
+.remover {
+  background-color: var(--cor-fundo-claro);
+  color: var(--cor-primaria);
+  border: 1px solid var(--cor-borda);
+  padding: 6px 12px;
+  border-radius: var(--raio-sm);
+  cursor: pointer;
+  font-size: var(--tamanho-texto);
+  line-height: 1;
+}
+
+.favorito:hover {
+  border-color: var(--cor-favorito);
+  color: var(--cor-favorito);
+}
+
+.favorito.ativo {
+  background-color: var(--cor-favorito);
+  border-color: var(--cor-favorito);
+  color: var(--cor-fundo-claro);
+}
+
+.favorito.ativo:hover {
+  color: var(--cor-fundo-claro);
+  filter: brightness(0.92);
+}
+
+.remover:hover {
+  border-color: var(--cor-destaque);
+  color: var(--cor-destaque);
+}
+
+#lista-favoritos {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 20px 20px;
+}
+
+.aviso-coords {
+  margin: 6px 0 0;
+  font-size: var(--tamanho-texto);
+  color: var(--cor-texto-suave);
+  font-style: italic;
+}
+
+.vazio {
+  text-align: center;
+  color: var(--cor-texto-suave);
+  font-size: var(--tamanho-texto);
+}
+
+#contagem,
+#contagem-favoritos {
+  text-align: center;
+  margin: 0 20px 15px;
+  font-size: var(--tamanho-texto);
+  color: var(--cor-texto-suave);
+}
+
+.centralizado {
+  text-align: center;
+  padding: 0 20px 25px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

@@ -134,6 +134,8 @@ const ENDERECOS = [
 
 let CENTRO_SP = [-23.5505, -46.6333];
 
+const CHAVE_FAVORITOS = 'descartes:favoritos';
+
 function criarElemento(tag, classe, texto) {
   let elemento = document.createElement(tag);
 
@@ -224,10 +226,170 @@ function criarCardEndereco(item) {
   artigo.append(
     criarElemento('h3', '', item.nome),
     criarElemento('p', '', item.endereco),
-    criarAcoes(criarBotao('ver-mapa', 'Ver no mapa', () => irParaMapa(item.nome)))
+    criarAcoes(
+      criarBotao('ver-mapa', 'Ver no mapa', () => irParaMapa(item.nome)),
+      criarBotaoFavorito(item, (favoritou, botao) => {
+        atualizarBotaoFavorito(botao, favoritou);
+        mostrarMensagem((favoritou ? 'Adicionado aos favoritos: ' : 'Removido dos favoritos: ') + item.nome);
+      })
+    )
   );
 
   return artigo;
+}
+
+function carregarFavoritos() {
+  try {
+    let dados = JSON.parse(localStorage.getItem(CHAVE_FAVORITOS));
+    return Array.isArray(dados) ? dados : [];
+  } catch (erro) {
+    return [];
+  }
+}
+
+function salvarFavoritos(favoritos) {
+  try {
+    localStorage.setItem(CHAVE_FAVORITOS, JSON.stringify(favoritos));
+    return true;
+  } catch (erro) {
+    return false;
+  }
+}
+
+function ehFavorito(nome) {
+  return carregarFavoritos().some((favorito) => favorito.nome === nome);
+}
+
+function alternarFavorito(item) {
+  let favoritos = carregarFavoritos();
+  let indice = favoritos.findIndex((favorito) => favorito.nome === item.nome);
+
+  if (indice === -1) {
+    favoritos.push({ nome: item.nome, endereco: item.endereco, coords: item.coords });
+  } else {
+    favoritos.splice(indice, 1);
+  }
+
+  return salvarFavoritos(favoritos) && indice === -1;
+}
+
+function removerFavorito(nome) {
+  return salvarFavoritos(carregarFavoritos().filter((favorito) => favorito.nome !== nome));
+}
+
+function limparFavoritos() {
+  return salvarFavoritos([]);
+}
+
+function resumirFavoritos(favoritos) {
+  return favoritos.reduce(
+    (resumo, favorito) => {
+      if (favorito.coords) resumo.comMapa += 1;
+      else resumo.semMapa += 1;
+      return resumo;
+    },
+    { comMapa: 0, semMapa: 0 }
+  );
+}
+
+function rotuloFavorito(favoritado) {
+  return favoritado ? 'Remover dos favoritos' : 'Adicionar aos favoritos';
+}
+
+function atualizarBotaoFavorito(botao, favoritado) {
+  botao.classList.toggle('ativo', favoritado);
+  botao.textContent = favoritado ? '★' : '☆';
+  botao.title = rotuloFavorito(favoritado);
+  botao.setAttribute('aria-label', rotuloFavorito(favoritado));
+  botao.setAttribute('aria-pressed', favoritado);
+}
+
+function criarBotaoFavorito(item, aoAlternar) {
+  let favoritado = ehFavorito(item.nome);
+  let botao = criarElemento('button', favoritado ? 'favorito ativo' : 'favorito', favoritado ? '★' : '☆');
+
+  botao.type = 'button';
+  botao.title = rotuloFavorito(favoritado);
+  botao.setAttribute('aria-label', rotuloFavorito(favoritado));
+  botao.setAttribute('aria-pressed', favoritado);
+  botao.addEventListener('click', () => aoAlternar(alternarFavorito(item), botao));
+
+  return botao;
+}
+
+function criarCardFavorito(favorito) {
+  let artigo = criarElemento('article', 'endereco');
+  let semMapa = !favorito.coords;
+
+  let botaoMapa = criarBotao('ver-mapa', 'Ver no mapa', () => irParaMapa(favorito.nome));
+  botaoMapa.disabled = semMapa;
+  if (semMapa) botaoMapa.title = 'Este ponto não tem coordenadas cadastradas.';
+
+  let botaoRemover = criarBotao('remover', 'Remover', () => {
+    if (!removerFavorito(favorito.nome)) {
+      mostrarMensagem('Não foi possível atualizar os favoritos neste navegador.');
+      return;
+    }
+
+    mostrarMensagem('Removido dos favoritos: ' + favorito.nome);
+    listarFavoritos();
+  });
+
+  artigo.append(criarElemento('h3', '', favorito.nome), criarElemento('p', '', favorito.endereco));
+
+  if (semMapa) artigo.appendChild(criarElemento('p', 'aviso-coords', 'Sem coordenadas disponíveis no mapa.'));
+
+  artigo.appendChild(criarAcoes(botaoMapa, botaoRemover));
+
+  return artigo;
+}
+
+function atualizarContagemFavoritos(favoritos) {
+  let contagem = document.getElementById('contagem-favoritos');
+  if (!contagem) return;
+
+  if (!favoritos.length) {
+    contagem.textContent = 'Nenhum favorito salvo ainda.';
+    return;
+  }
+
+  let { comMapa } = resumirFavoritos(favoritos);
+  let total = favoritos.length + (favoritos.length === 1 ? ' favorito salvo' : ' favoritos salvos');
+  contagem.textContent = total + ' · ' + comMapa + ' com ponto no mapa';
+}
+
+function listarFavoritos() {
+  let lista = document.getElementById('lista-favoritos');
+  if (!lista) return;
+
+  let favoritos = carregarFavoritos();
+
+  lista.replaceChildren(...favoritos.map(criarCardFavorito));
+
+  if (!favoritos.length)
+    lista.appendChild(criarElemento('p', 'vazio', 'Você ainda não favoritou nenhum ecoponto. Na busca de endereços, toque em ☆ para salvar um endereço.'));
+
+  atualizarContagemFavoritos(favoritos);
+
+  let botaoLimpar = document.getElementById('limpar-favoritos');
+  if (botaoLimpar) botaoLimpar.hidden = favoritos.length === 0;
+}
+
+function iniciarFavoritos() {
+  let botaoLimpar = document.getElementById('limpar-favoritos');
+  if (!botaoLimpar) return;
+
+  botaoLimpar.addEventListener('click', () => {
+    if (!window.confirm('Remover todos os favoritos salvos neste navegador?')) return;
+
+    if (!limparFavoritos()) {
+      mostrarMensagem('Não foi possível atualizar os favoritos neste navegador.');
+      return;
+    }
+
+    mostrarMensagem('Todos os favoritos foram removidos.');
+    listarFavoritos();
+  });
 }
 
 function iniciarMapa() {
@@ -275,5 +437,7 @@ function colocarPin(mapa, nome) {
 
 document.addEventListener('DOMContentLoaded', () => {
   construirLista();
+  listarFavoritos();
+  iniciarFavoritos();
   iniciarMapa();
 });
