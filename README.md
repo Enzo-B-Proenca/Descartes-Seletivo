@@ -15,7 +15,8 @@ Esse projeto tem por foco atender as ODS 11 (Cidades e comunidades sustentáveis
 
 ## Imagens do protótipo 
 ![Wireframe1](assets/wireframe1.png)
-![Wireframe1](assets/wireframe2.png)
+![Wireframe2](assets/wireframe2.png)
+![Wireframe3](assets/wireframe3.png)
 
 ### 1. Estrutura básica (HTML)
 
