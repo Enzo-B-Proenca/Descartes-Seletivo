@@ -21,8 +21,10 @@
 
     <form id="busca-section">
       <label for="busca">Buscar ponto de coleta:</label>
-      <input type="search" id="busca" placeholder="Digite um bairro ou rua..." onkeyup="filtrarEnderecos()">
+      <input type="search" id="busca" placeholder="Digite um bairro ou rua..." oninput="filtrarEnderecos()">
     </form>
+
+    <p id="contagem"></p>
 
     <section id="lista-enderecos">
     </section>

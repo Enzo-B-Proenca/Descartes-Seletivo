@@ -134,59 +134,100 @@ const ENDERECOS = [
 
 let CENTRO_SP = [-23.5505, -46.6333];
 
+function criarElemento(tag, classe, texto) {
+  let elemento = document.createElement(tag);
+
+  if (classe) elemento.className = classe;
+  if (texto) elemento.textContent = texto;
+
+  return elemento;
+}
+
+function criarBotao(classe, texto, aoClicar) {
+  let botao = criarElemento('button', classe, texto);
+  botao.type = 'button';
+  botao.addEventListener('click', aoClicar);
+  return botao;
+}
+
+function criarAcoes(...botoes) {
+  let acoes = criarElemento('div', 'acoes');
+  acoes.append(...botoes);
+  return acoes;
+}
+
+function mostrarMensagem(texto) {
+  let mensagem = document.getElementById('mensagem');
+  if (mensagem) mensagem.innerText = texto;
+}
+
 function mostrarPontos(tipo) {
   let lista = document.getElementById('pontos-' + tipo);
+  if (!lista) return;
 
   if (lista.style.display === 'block')
     lista.style.display = 'none';
   else
     lista.style.display = 'block';
 
-  let texto = document.getElementById('mensagem');
-  texto.innerText = 'Pontos de coleta de ' + tipo;
+  mostrarMensagem('Pontos de coleta de ' + tipo);
 }
 
-function construirLista() {
+function combinarComTermo(item, termo) {
+  return (item.nome + ' ' + item.endereco).toLowerCase().includes(termo);
+}
+
+function termoBusca() {
+  let campo = document.getElementById('busca');
+  return campo ? campo.value.trim().toLowerCase() : '';
+}
+
+function contarCorrespondentes(termo) {
+  return ENDERECOS.reduce((total, item) => total + (combinarComTermo(item, termo) ? 1 : 0), 0);
+}
+
+function atualizarContagem(termo) {
+  let contagem = document.getElementById('contagem');
+  if (!contagem) return;
+
+  contagem.textContent = 'Mostrando ' + contarCorrespondentes(termo) + ' de ' + ENDERECOS.length + ' ecopontos';
+}
+
+function renderizarLista(itens) {
   let lista = document.getElementById('lista-enderecos');
   if (!lista) return;
 
-  ENDERECOS.forEach((item) => {
-    let artigo = document.createElement('article');
-    artigo.className = 'endereco';
+  lista.replaceChildren(...itens.map(criarCardEndereco));
 
-    let titulo = document.createElement('h3');
-    titulo.textContent = item.nome;
+  if (!itens.length)
+    lista.appendChild(criarElemento('p', 'vazio', 'Nenhum ecoponto encontrado para essa busca.'));
+}
 
-    let endereco = document.createElement('p');
-    endereco.textContent = item.endereco;
-
-    let botao = document.createElement('button');
-    botao.className = 'ver-mapa';
-    botao.textContent = 'Ver no mapa';
-    botao.addEventListener('click', () => {
-      window.location.href = 'descartes.html?ecoponto=' + encodeURIComponent(item.nome);
-    });
-
-    artigo.appendChild(titulo);
-    artigo.appendChild(endereco);
-    artigo.appendChild(botao);
-    lista.appendChild(artigo);
-  });
+function construirLista() {
+  renderizarLista(ENDERECOS);
+  atualizarContagem('');
 }
 
 function filtrarEnderecos() {
-  let termo = document.getElementById('busca').value.toLowerCase();
-  let enderecos = document.getElementsByClassName('endereco');
+  let termo = termoBusca();
+  renderizarLista(ENDERECOS.filter((item) => combinarComTermo(item, termo)));
+  atualizarContagem(termo);
+}
 
-  for (let i = 0; i < enderecos.length; i++) {
-    let texto = enderecos[i].innerText.toLowerCase();
+function irParaMapa(nome) {
+  window.location.href = 'descartes.html?ecoponto=' + encodeURIComponent(nome);
+}
 
-    if (texto.indexOf(termo) !== -1) {
-      enderecos[i].style.display = 'block';
-    } else {
-      enderecos[i].style.display = 'none';
-    }
-  }
+function criarCardEndereco(item) {
+  let artigo = criarElemento('article', 'endereco');
+
+  artigo.append(
+    criarElemento('h3', '', item.nome),
+    criarElemento('p', '', item.endereco),
+    criarAcoes(criarBotao('ver-mapa', 'Ver no mapa', () => irParaMapa(item.nome)))
+  );
+
+  return artigo;
 }
 
 function iniciarMapa() {
@@ -219,10 +260,8 @@ function colocarPin(mapa, nome) {
     return e.nome.toLowerCase() === nome.toLowerCase();
   });
 
-  let mensagem = document.getElementById('mensagem');
-
   if (!item || !item.coords) {
-    if (mensagem) mensagem.innerText = 'Ponto sem coordenadas disponíveis: ' + nome;
+    mostrarMensagem('Ponto sem coordenadas disponíveis: ' + nome);
     return;
   }
 
@@ -231,8 +270,10 @@ function colocarPin(mapa, nome) {
     .bindPopup('<strong>' + item.nome + '</strong><br>' + item.endereco)
     .openPopup();
 
-  if (mensagem) mensagem.innerText = 'Ponto exibido no mapa: ' + item.nome;
+  mostrarMensagem('Ponto exibido no mapa: ' + item.nome);
 }
 
-document.addEventListener('DOMContentLoaded', construirLista);
-document.addEventListener('DOMContentLoaded', iniciarMapa);
+document.addEventListener('DOMContentLoaded', () => {
+  construirLista();
+  iniciarMapa();
+});
