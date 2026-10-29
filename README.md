@@ -181,3 +181,63 @@ useEffect(() => {
 ```
 
 A checagem de `_leaflet_id` evita criar o mapa duas vezes, e o `mapa?.remove()` destrói o mapa quando o componente sai da tela.
+
+### 4. Página inicial (`app/enderecos/page.js`)
+O antigo `enderecos.html` agora reside em `enderecos/page.js`. Com o React, não é necessário definir as funções de alteração do DOM, logo a página só precisa do conteúdo funcional relavante aos endereços.
+
+```javascript
+const CHAVE_FAVORITOS = "descartes:favoritos"
+
+function carregarFavoritos() {
+  try {
+    let dados = JSON.parse(localStorage.getItem(CHAVE_FAVORITOS));
+    return Array.isArray(dados) ? dados : [];
+  } catch (erro) {
+    return [];
+  }
+}
+
+function salvarFavoritos(favoritos) {
+  try {
+    localStorage.setItem(CHAVE_FAVORITOS, JSON.stringify(favoritos));
+    return true;
+  } catch (erro) {
+    return false;
+  }
+}
+```
+
+A lista de endereços está definida de forma estática no código. Como um array de objetos no seguinte formato:
+
+```javascript
+  { 
+    "nome": "Jardim Romano", 
+    "endereco": "Rua Duarte Martins Mourão, 400 - Jardim Santa Margarida",
+     "coords": [-23.4850264, -46.3857398] 
+  },
+```
+
+Por fim essa página tem uma filtragem dos endereços para apenas mostrar o conteúdo digitado na barra de busca. Essa busca ocorre em `onChange()`
+```javascript
+const resultados = useMemo(() => {
+  if (!termo) return ENDERECOS;
+    return ENDERECOS.filter((item) =>
+      `${item.nome} ${item.endereco}`
+        .toLocaleLowerCase("pt-BR")
+        .includes(termo)
+    );
+  }, [termo]);
+```
+
+```javascript
+<input
+  type="search"
+  id="busca"
+  placeholder="Digite um bairro ou rua..."
+  value={busca}
+  onChange={(event) => {
+  setBusca(event.target.value);
+  setMensagem("");
+}}
+/>
+```
