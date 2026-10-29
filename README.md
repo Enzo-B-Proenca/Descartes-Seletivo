@@ -181,3 +181,25 @@ useEffect(() => {
 ```
 
 A checagem de `_leaflet_id` evita criar o mapa duas vezes, e o `mapa?.remove()` destrói o mapa quando o componente sai da tela.
+
+### 9. Página de favoritos (`src/app/favoritos/page.js`)
+
+O `favoritos.html` virou a rota `/favoritos`. A página reaproveita `Header` e `Navigation` passando props, e mantém os mesmos `id` e classes do HTML original.
+
+```javascript
+<Header subtitle="Seus pontos de coleta favoritos" />
+<Navigation active="favoritos" />
+```
+
+### 10. Página de endereços (`src/app/enderecos/page.js`)
+
+O `enderecos.html` virou a rota `/enderecos`. A busca, os favoritos e a mensagem viraram estados (`useState`), e a filtragem usa `useMemo`.
+
+```javascript
+const resultados = useMemo(() => {
+  if (!termo) return ENDERECOS;
+  return ENDERECOS.filter((item) =>
+    `${item.nome} ${item.endereco}`.toLocaleLowerCase("pt-BR").includes(termo)
+  );
+}, [termo]);
+```
