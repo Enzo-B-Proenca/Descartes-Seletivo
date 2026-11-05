@@ -2,8 +2,14 @@
 
 import { useState } from "react";
 
-export default function WasteCard({ id, titulo, descricao, pontos }) {
+export default function WasteCard({ id, titulo, descricao, pontos, onToggle }) {
   const [visivel, setVisivel] = useState(false);
+
+  function alternarVisibilidade() {
+    const proximo = !visivel;
+    setVisivel(proximo);
+    onToggle?.(id);
+  }
 
   return (
     <article className="card" data-tipo={id}>
@@ -14,7 +20,7 @@ export default function WasteCard({ id, titulo, descricao, pontos }) {
         type="button"
         aria-expanded={visivel}
         aria-controls={`pontos-${id}`}
-        onClick={() => setVisivel((atual) => !atual)}
+        onClick={alternarVisibilidade}
       >
         {visivel ? "Ocultar pontos de coleta" : "Ver pontos de coleta"}
       </button>
