@@ -182,17 +182,72 @@ useEffect(() => {
 
 A checagem de `_leaflet_id` evita criar o mapa duas vezes, e o `mapa?.remove()` destrói o mapa quando o componente sai da tela.
 
-### 9. Página inicial (`app/enderecos/page.js`)
-O antigo `enderecos.html` agora reside em `enderecos/page.js`. Com o React, não é necessário definir as funções de alteração do DOM, logo a página só precisa do conteúdo funcional relavante aos endereços.
+### 9. Base de ecopontos (`src/data/enderecos.js`)
+
+Os 132 ecopontos foram extraídos para um módulo compartilhado, que exporta a lista `ENDERECOS` e o centro inicial do mapa `CENTRO_SP`. Assim, a página de endereços e o mapa consultam a mesma fonte de dados.
 
 ```javascript
-const CHAVE_FAVORITOS = "descartes:favoritos"
+export const CENTRO_SP = [-23.5505, -46.6333];
 
+export const ENDERECOS = [
+  {
+    "nome": "Jardim Romano",
+    "endereco": "Rua Duarte Martins Mourão, 400 - Jardim Santa Margarida",
+    "coords": [-23.4850264, -46.3857398]
+  },
+  // ...
+];
+```
+
+```javascript
+import { ENDERECOS } from "../../data/enderecos";
+```
+
+### 10. Página de endereços (`src/app/enderecos/page.js`)
+
+O `enderecos.html` virou a rota `/enderecos`. A busca, os favoritos e a mensagem são estados (`useState`), e a filtragem usa `useMemo`. A busca continua acontecendo em `onChange()`, agora filtrando diretamente o array `ENDERECOS`.
+
+```javascript
+const resultados = useMemo(() => {
+  if (!termo) return ENDERECOS;
+
+  return ENDERECOS.filter((item) =>
+    `${item.nome} ${item.endereco}`.toLowerCase().includes(termo)
+  );
+}, [termo]);
+```
+
+Os favoritos continuam salvos no `localStorage`, na chave `descartes:favoritos`, com as funções de leitura e gravação definidas na própria página. O botão alterna entre `☆` e `★`, recebe a classe `ativo` quando preenchido e expõe o estado com `aria-pressed`.
+
+```javascript
+<button
+  type="button"
+  className={`favorito${ehFavorito ? " ativo" : ""}`}
+  title={rotulo}
+  aria-label={rotulo}
+  aria-pressed={ehFavorito}
+  onClick={() => alternarFavorito(item)}
+>
+  {ehFavorito ? "★" : "☆"}
+</button>
+```
+
+O botão “Ver no mapa” navega para a página inicial passando o nome do ecoponto:
+
+```javascript
+router.push(`/?ecoponto=${encodeURIComponent(nome)}`);
+```
+
+### 11. Página de favoritos (`src/app/favoritos/page.js`)
+
+O `favoritos.html` virou a rota `/favoritos`, com toda a lógica de favoritos contida na própria página: carregar do `localStorage`, remover um item, limpar todos, calcular a contagem e controlar a mensagem.
+
+```javascript
 function carregarFavoritos() {
   try {
-    let dados = JSON.parse(localStorage.getItem(CHAVE_FAVORITOS));
+    const dados = JSON.parse(localStorage.getItem(CHAVE_FAVORITOS));
     return Array.isArray(dados) ? dados : [];
-  } catch (erro) {
+  } catch {
     return [];
   }
 }
@@ -201,65 +256,35 @@ function salvarFavoritos(favoritos) {
   try {
     localStorage.setItem(CHAVE_FAVORITOS, JSON.stringify(favoritos));
     return true;
-  } catch (erro) {
+  } catch {
     return false;
   }
 }
 ```
 
-A lista de endereços está definida de forma estática no código. Como um array de objetos no seguinte formato:
+A lista é carregada no `useEffect` e os cards são gerados com `map`. O botão “Limpar todos” só aparece quando há favoritos salvos, e ecopontos sem coordenadas exibem um aviso e têm o botão de mapa desabilitado.
+
+### 12. Mapa e seleção de ecoponto (`src/components/CollectionMap/index.jsx`)
+
+O `CollectionMap` lê o parâmetro `?ecoponto=` da URL. Se o ponto existir e tiver coordenadas, o mapa centraliza nele e abre o popup; caso contrário, a mensagem informa que o ponto não tem coordenadas. Sem parâmetro, o componente tenta usar a geolocalização do navegador.
 
 ```javascript
-  { 
-    "nome": "Jardim Romano", 
-    "endereco": "Rua Duarte Martins Mourão, 400 - Jardim Santa Margarida",
-     "coords": [-23.4850264, -46.3857398] 
-  },
-```
+const nome = new URLSearchParams(window.location.search).get("ecoponto");
 
-Por fim essa página tem uma filtragem dos endereços para apenas mostrar o conteúdo digitado na barra de busca. Essa busca ocorre em `onChange()`
-```javascript
-const resultados = useMemo(() => {
-  if (!termo) return ENDERECOS;
-    return ENDERECOS.filter((item) =>
-      `${item.nome} ${item.endereco}`
-        .toLocaleLowerCase("pt-BR")
-        .includes(termo)
-    );
-  }, [termo]);
+if (nome) {
+  colocarPin(L, nome);
+  return;
+}
+
+centralizarNaMinhaPosicao(L);
 ```
 
 ```javascript
-<input
-  type="search"
-  id="busca"
-  placeholder="Digite um bairro ou rua..."
-  value={busca}
-  onChange={(event) => {
-  setBusca(event.target.value);
-  setMensagem("");
-}}
-/>
-```
+mapa.setView(item.coords, 16);
+L.marker(item.coords)
+  .addTo(mapa)
+  .bindPopup(`<strong>${item.nome}</strong><br>${item.endereco}`)
+  .openPopup();
 
-### 10. Página de favoritos (`src/app/favoritos/page.js`)
-
-O `favoritos.html` virou a rota `/favoritos`. A página reaproveita `Header` e `Navigation` passando props, e mantém os mesmos `id` e classes do HTML original.
-
-```javascript
-<Header subtitle="Seus pontos de coleta favoritos" />
-<Navigation active="favoritos" />
-```
-
-### 11. Página de endereços (`src/app/enderecos/page.js`)
-
-O `enderecos.html` virou a rota `/enderecos`. A busca, os favoritos e a mensagem viraram estados (`useState`), e a filtragem usa `useMemo`.
-
-```javascript
-const resultados = useMemo(() => {
-  if (!termo) return ENDERECOS;
-  return ENDERECOS.filter((item) =>
-    `${item.nome} ${item.endereco}`.toLocaleLowerCase("pt-BR").includes(termo)
-  );
-}, [termo]);
+onMessage?.(`Ponto exibido no mapa: ${item.nome}`);
 ```
