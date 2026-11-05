@@ -59,6 +59,7 @@ export default function CollectionMap({ onMessage }) {
         maxZoom: 19,
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        referrerPolicy: "strict-origin-when-cross-origin",
       }).addTo(mapa);
 
       const nome = new URLSearchParams(window.location.search).get("ecoponto");
