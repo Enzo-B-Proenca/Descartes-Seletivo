@@ -11,7 +11,7 @@ export default function CollectionMap({ onMessage }) {
     let mapa;
     let cancelado = false;
 
-    async function colocarPin(L, nome) {
+    async function colocarPin(L, pinIcon, nome) {
       let item;
 
       // Busca o ecoponto pelo nome na API
@@ -32,7 +32,7 @@ export default function CollectionMap({ onMessage }) {
       }
 
       mapa.setView(item.coords, 16);
-      L.marker(item.coords)
+      L.marker(item.coords, {icon: pinIcon})
         .addTo(mapa)
         .bindPopup(`<strong>${item.nome}</strong><br>${item.endereco}`)
         .openPopup();
@@ -40,7 +40,7 @@ export default function CollectionMap({ onMessage }) {
       onMessage?.(`Ponto exibido no mapa: ${item.nome}`);
     }
 
-    function centralizarNaMinhaPosicao(L) {
+    function centralizarNaMinhaPosicao(L, pinIcon) {
       if (!navigator.geolocation) return;
 
       navigator.geolocation.getCurrentPosition(
@@ -49,7 +49,7 @@ export default function CollectionMap({ onMessage }) {
 
           const minhaPosicao = [pos.coords.latitude, pos.coords.longitude];
           mapa.setView(minhaPosicao, 14);
-          L.marker(minhaPosicao)
+          L.marker(minhaPosicao, {icon: pinIcon})
             .addTo(mapa)
             .bindPopup("Você está aqui")
             .openPopup();
@@ -60,6 +60,15 @@ export default function CollectionMap({ onMessage }) {
 
     async function iniciarMapa() {
       const L = await import("leaflet");
+      const pinIcon = L.icon({
+        iconUrl: "/images/leaflet/marker-icon.png",
+        iconRetinaUrl: "/images/leaflet/marker-icon-2x.png",
+        shadowUrl: "/images/leaflet/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      });
 
       if (cancelado || !mapaRef.current || mapaRef.current._leaflet_id) return;
 
@@ -75,11 +84,11 @@ export default function CollectionMap({ onMessage }) {
       const nome = new URLSearchParams(window.location.search).get("ecoponto");
 
       if (nome) {
-        colocarPin(L, nome);
+        colocarPin(L, pinIcon, nome);
         return;
       }
 
-      centralizarNaMinhaPosicao(L);
+      centralizarNaMinhaPosicao(L, pinIcon);
     }
 
     iniciarMapa();
