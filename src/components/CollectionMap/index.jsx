@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
-import { CENTRO_SP, ENDERECOS } from "../../data/enderecos";
+import { CENTRO_SP } from "../../data/enderecos";
 
 export default function CollectionMap({ onMessage }) {
   const mapaRef = useRef(null);
@@ -11,10 +11,20 @@ export default function CollectionMap({ onMessage }) {
     let mapa;
     let cancelado = false;
 
-    function colocarPin(L, nome) {
-      const item = ENDERECOS.find(
-        (endereco) => endereco.nome.toLowerCase() === nome.toLowerCase()
-      );
+    async function colocarPin(L, nome) {
+      let item;
+
+      // Busca o ecoponto pelo nome na API
+      try {
+        const res = await fetch(`/api/enderecos?nome=${encodeURIComponent(nome)}`);
+        const dados = await res.json();
+        item = dados[0];
+      } catch {
+        onMessage?.("Não foi possível carregar os ecopontos.");
+        return;
+      }
+
+      if (cancelado || !mapa) return;
 
       if (!item || !item.coords) {
         onMessage?.(`Ponto sem coordenadas disponíveis: ${nome}`);
@@ -44,7 +54,7 @@ export default function CollectionMap({ onMessage }) {
             .bindPopup("Você está aqui")
             .openPopup();
         },
-        () => {}
+        () => { }
       );
     }
 
