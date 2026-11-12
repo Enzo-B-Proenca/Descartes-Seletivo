@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
-import { ENDERECOS } from "../../data/enderecos";
 
 const CHAVE_FAVORITOS = "descartes:favoritos";
 const EVENTO_FAVORITOS = "descartes:favoritos:alterado";
@@ -59,6 +58,8 @@ export default function EnderecosPage() {
   const router = useRouter();
   const [busca, setBusca] = useState("");
   const [mensagem, setMensagem] = useState("");
+  const [enderecos, setEnderecos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
   const favoritosJson = useSyncExternalStore(
     assinarFavoritos,
     lerFavoritos,
@@ -69,15 +70,24 @@ export default function EnderecosPage() {
     [favoritosJson]
   );
 
+  // Busca os ecopontos na API quando a página abre
+  useEffect(() => {
+    fetch("/api/enderecos")
+      .then((res) => res.json())
+      .then((dados) => setEnderecos(dados))
+      .catch(() => setMensagem("Não foi possível carregar os ecopontos."))
+      .finally(() => setCarregando(false));
+  }, []);
+
   const termo = busca.trim().toLowerCase();
 
   const resultados = useMemo(() => {
-    if (!termo) return ENDERECOS;
+    if (!termo) return enderecos;
 
-    return ENDERECOS.filter((item) =>
+    return enderecos.filter((item) =>
       `${item.nome} ${item.endereco}`.toLowerCase().includes(termo)
     );
-  }, [termo]);
+  }, [termo, enderecos]);
 
   function irParaMapa(nome) {
     router.push(`/?ecoponto=${encodeURIComponent(nome)}`);
@@ -128,50 +138,52 @@ export default function EnderecosPage() {
         </form>
 
         <p id="contagem" aria-live="polite">
-          Mostrando {resultados.length} de {ENDERECOS.length} ecopontos
+          {carregando
+            ? "Carregando ecopontos..."
+            : `Mostrando ${resultados.length} de ${enderecos.length} ecopontos`}
         </p>
 
         <section id="lista-enderecos" aria-label="Pontos de coleta">
-          {resultados.length > 0 ? (
-            resultados.map((item) => {
-              const ehFavorito = favoritos.some(
-                (favorito) => favorito.nome === item.nome
-              );
-              const rotulo = rotuloFavorito(ehFavorito);
+          {resultados.length > 0
+            ? resultados.map((item) => {
+                const ehFavorito = favoritos.some(
+                  (favorito) => favorito.nome === item.nome
+                );
+                const rotulo = rotuloFavorito(ehFavorito);
 
-              return (
-                <article className="endereco" key={item.nome}>
-                  <h3>{item.nome}</h3>
-                  <p>{item.endereco}</p>
+                return (
+                  <article className="endereco" key={item.nome}>
+                    <h3>{item.nome}</h3>
+                    <p>{item.endereco}</p>
 
-                  <div className="acoes">
-                    <button
-                      type="button"
-                      className="ver-mapa"
-                      onClick={() => irParaMapa(item.nome)}
-                    >
-                      Ver no mapa
-                    </button>
+                    <div className="acoes">
+                      <button
+                        type="button"
+                        className="ver-mapa"
+                        onClick={() => irParaMapa(item.nome)}
+                      >
+                        Ver no mapa
+                      </button>
 
-                    <button
-                      type="button"
-                      className={`favorito${ehFavorito ? " ativo" : ""}`}
-                      title={rotulo}
-                      aria-label={rotulo}
-                      aria-pressed={ehFavorito}
-                      onClick={() => alternarFavorito(item)}
-                    >
-                      {ehFavorito ? "★" : "☆"}
-                    </button>
-                  </div>
-                </article>
-              );
-            })
-          ) : (
-            <p className="vazio">
-              Nenhum ecoponto encontrado para essa busca.
-            </p>
-          )}
+                      <button
+                        type="button"
+                        className={`favorito${ehFavorito ? " ativo" : ""}`}
+                        title={rotulo}
+                        aria-label={rotulo}
+                        aria-pressed={ehFavorito}
+                        onClick={() => alternarFavorito(item)}
+                      >
+                        {ehFavorito ? "★" : "☆"}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })
+            : !carregando && (
+                <p className="vazio">
+                  Nenhum ecoponto encontrado para essa busca.
+                </p>
+              )}
         </section>
       </main>
 
