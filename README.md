@@ -288,3 +288,119 @@ L.marker(item.coords)
 
 onMessage?.(`Ponto exibido no mapa: ${item.nome}`);
 ```
+
+## 11. API de ecopontos
+
+Transformamos a lista em uma **API própria**: uma rota do Next.js que devolve os ecopontos em formato JSON. As páginas passaram a buscar os dados nessa rota usando `fetch`.
+
+### 11.1 Criando a rota da API
+
+No Next.js, um arquivo chamado `route.js` dentro da pasta `app` vira uma rota de API. O caminho das pastas define a URL:
+
+```
+src/app/api/enderecos/route.js  →  /api/enderecos
+```
+
+```js
+import { ENDERECOS } from "@/data/enderecos";
+
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const nome = searchParams.get("nome")?.trim().toLowerCase();
+  const busca = searchParams.get("busca")?.trim().toLowerCase();
+
+  let resultado = ENDERECOS;
+
+  if (nome) {
+    resultado = resultado.filter((item) => item.nome.toLowerCase() === nome);
+  }
+
+  if (busca) {
+    resultado = resultado.filter((item) =>
+      `${item.nome} ${item.endereco}`.toLowerCase().includes(busca)
+    );
+  }
+
+  return Response.json(resultado);
+}
+```
+
+- A função `GET` é executada sempre que alguém acessa a URL.
+- `searchParams` lê os filtros opcionais que vêm depois do `?` na URL.
+- `Response.json(resultado)` devolve a lista em formato JSON.
+
+A API aceita três formas de uso:
+
+| URL | Resultado |
+|---|---|
+| `/api/enderecos` | todos os ecopontos |
+| `/api/enderecos?busca=mooca` | ecopontos com "mooca" no nome ou endereço |
+| `/api/enderecos?nome=Tatuapé` | um ecoponto específico pelo nome |
+
+### 11.2 Página de endereços consumindo a API
+
+Em `src/app/enderecos/page.js`, removemos o `import { ENDERECOS }` e criamos dois estados: um para guardar os ecopontos e outro para indicar se ainda estão carregando.
+
+```js
+const [enderecos, setEnderecos] = useState([]);
+const [carregando, setCarregando] = useState(true);
+```
+
+Quando a página abre, o `useEffect` faz a requisição para a API:
+
+```js
+useEffect(() => {
+  fetch("/api/enderecos")
+    .then((res) => res.json())
+    .then((dados) => setEnderecos(dados))
+    .catch(() => setMensagem("Não foi possível carregar os ecopontos."))
+    .finally(() => setCarregando(false));
+}, []);
+```
+
+- `fetch` faz a requisição para a nossa API.
+- `res.json()` transforma a resposta em um array JavaScript.
+- `setEnderecos` guarda os dados no estado, e a lista aparece na tela.
+- Se der erro, uma mensagem é exibida para o usuário.
+- No final, `setCarregando(false)` indica que terminou de carregar.
+
+Enquanto a API não responde, a contagem mostra um aviso de carregamento:
+
+```jsx
+{carregando
+  ? "Carregando ecopontos..."
+  : `Mostrando ${resultados.length} de ${enderecos.length} ecopontos`}
+```
+
+O filtro da busca continuou igual, só passou a usar `enderecos` (que vem da API) no lugar de `ENDERECOS`.
+
+### 11.3 Mapa consumindo a API
+
+No componente `CollectionMap`, a função `colocarPin` buscava o ecoponto direto na lista. Agora ela pede à API só o ecoponto que foi clicado, usando o filtro `nome`:
+
+```js
+async function colocarPin(L, nome) {
+  let item;
+
+  try {
+    const res = await fetch(`/api/enderecos?nome=${encodeURIComponent(nome)}`);
+    const dados = await res.json();
+    item = dados[0];
+  } catch {
+    onMessage?.("Não foi possível carregar os ecopontos.");
+    return;
+  }
+
+  if (cancelado || !mapa) return;
+  // ...resto da função igual: centraliza o mapa e coloca o marcador
+}
+```
+
+- A função virou `async` para poder usar `await` e esperar a resposta da API.
+- `encodeURIComponent` protege nomes com acentos e espaços na URL (ex.: "Freguesia do Ó").
+- `dados[0]` pega o primeiro (e único) resultado.
+- `if (cancelado || !mapa) return;` evita erro caso o usuário saia da página antes da API responder.
+
+### 11.4 Testando a API
+
+Com o projeto rodando (`npm run dev`), basta abrir no navegador o endereço do site seguido de `/api/enderecos`. Se aparecer a lista em JSON, a API está funcionando.
