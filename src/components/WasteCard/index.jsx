@@ -16,14 +16,14 @@ export default function WasteCard({ id, titulo, descricao, pontos, onToggle }) {
       <h2>{titulo}</h2>
       <p>{descricao}</p>
 
-      <button
-        type="button"
-        aria-expanded={visivel}
-        aria-controls={`pontos-${id}`}
-        onClick={alternarVisibilidade}
-      >
-        {visivel ? "Ocultar pontos de coleta" : "Ver pontos de coleta"}
-      </button>
+      <CustomButton
+  type="button"
+  aria-expanded={visivel}
+  aria-controls={`pontos-${id}`}
+  onClick={alternarVisibilidade}
+>
+  {visivel ? "Ocultar pontos de coleta" : "Ver pontos de coleta"}
+</CustomButton>
 
       {visivel && (
         <ul className="pontos" id={`pontos-${id}`}>
