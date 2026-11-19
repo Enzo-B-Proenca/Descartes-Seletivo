@@ -72,7 +72,7 @@ header h1 {
 }
 
 .pontos {
-  display: none;
+  display: block;
   list-style: none;
   text-align: left;
   margin: 10px 0 0;
