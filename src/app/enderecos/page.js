@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
-import CustomButton from "../../components/CustomButton";
+import CustomButton from "../Button/CustomButton";
 
 const CHAVE_FAVORITOS = "descartes:favoritos";
 const EVENTO_FAVORITOS = "descartes:favoritos:alterado";
