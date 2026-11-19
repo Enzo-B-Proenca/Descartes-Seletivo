@@ -145,7 +145,7 @@ export default function FavoritosPage() {
                 )}
 
                 <div className="acoes">
-                  <button
+                  <CustomButton
                     type="button"
                     className="ver-mapa"
                     onClick={() => irParaMapa(favorito.nome)}
@@ -157,15 +157,15 @@ export default function FavoritosPage() {
                     }
                   >
                     Ver no mapa
-                  </button>
+                  </CustomButton>
 
-                  <button
+                  <CustomButton
                     type="button"
                     className="remover"
                     onClick={() => removerFavoritoDaLista(favorito)}
                   >
                     Remover
-                  </button>
+                  </CustomButton>
                 </div>
               </article>
             );
