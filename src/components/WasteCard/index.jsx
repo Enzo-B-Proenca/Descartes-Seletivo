@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import CustomButton from "../CustomButton";
+import CustomButton from "../Button/CustomButton";
 
 export default function WasteCard({ id, titulo, descricao, pontos, onToggle }) {
   const [visivel, setVisivel] = useState(false);
